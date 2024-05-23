@@ -12,7 +12,7 @@
 .NOTES
         File Name: Get-CustomScriptStatus.ps1
         Author: Mike Lee
-        Date: 3/7/2024
+        Date: 5/23/2024
         Disclaimer: The sample scripts are provided AS IS without warranty of any kind. 
         Microsoft further disclaims all implied warranties including, without limitation, 
         any implied warranties of merchantability or of fitness for a particular purpose. 
@@ -46,26 +46,33 @@ $global:output = @()
 Function findsites {
         foreach ($site in $sites) {
 
-                #we are exporting all sites and reporting on the custom script status
-                if ($site.DenyAddAndCustomizePages -eq 'Disabled') {
-                        $ExportItem = New-Object PSObject
-                        $ExportItem | Add-Member -MemberType NoteProperty -name "Site" -value $site.url
-                        $ExportItem | Add-Member -MemberType NoteProperty -name "Template" -value $site.Template
-                        $ExportItem | Add-Member -MemberType NoteProperty -name "Custom Script Allowed" -value "Yes"                            
-                        $global:output += $ExportItem
-                        Write-Host ""
-                        Write-Host "Custom Script is Enabled on $($site.url)"    -ForegroundColor Yellow
+                Try {
+                        #we are exporting all sites and reporting on the custom script status
+                        if ($site.DenyAddAndCustomizePages -eq 'Disabled') {
+                                $ExportItem = New-Object PSObject
+                                $ExportItem | Add-Member -MemberType NoteProperty -name "Site" -value $site.url
+                                $ExportItem | Add-Member -MemberType NoteProperty -name "Template" -value $site.Template
+                                $ExportItem | Add-Member -MemberType NoteProperty -name "Custom Script Allowed" -value "Yes"                            
+                                $global:output += $ExportItem
+                                Write-Host ""
+                                Write-Host "Custom Script is Enabled on $($site.url)"    -ForegroundColor Yellow
+                        }
+
+                        if ($site.DenyAddAndCustomizePages -eq 'Enabled') {
+                                $ExportItem = New-Object PSObject
+                                $ExportItem | Add-Member -MemberType NoteProperty -name "Site" -value $site.url
+                                $ExportItem | Add-Member -MemberType NoteProperty -name "Template" -value $site.Template
+                                $ExportItem | Add-Member -MemberType NoteProperty -name "Custom Script Allowed" -value "No"                           
+                                $global:output += $ExportItem
+                                Write-Host ""
+                                Write-Host "Custom Script is Disabled on $($site.url)"   -ForegroundColor Green
+                        } 
+        
                 }
 
-                if ($site.DenyAddAndCustomizePages -eq 'Enabled') {
-                        $ExportItem = New-Object PSObject
-                        $ExportItem | Add-Member -MemberType NoteProperty -name "Site" -value $site.url
-                        $ExportItem | Add-Member -MemberType NoteProperty -name "Template" -value $site.Template
-                        $ExportItem | Add-Member -MemberType NoteProperty -name "Custom Script Allowed" -value "No"                           
-                        $global:output += $ExportItem
-                        Write-Host ""
-                        Write-Host "Custom Script is Disabled on $($site.url)"   -ForegroundColor Green
-                } 
+                catch {
+                        Write-Host "Error occurred while processing $($site.url): $_" -ForegroundColor Red
+                }
         }
 }
 findsites
